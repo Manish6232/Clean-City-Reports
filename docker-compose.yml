@@ -1,0 +1,50 @@
+version: '3.8'
+services:
+  mongodb:
+    image: mongo:7
+    container_name: cleancity-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: cleancity
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cleancity-backend
+    ports:
+      - "5001:5001"
+    environment:
+      MONGO_URI: mongodb://mongodb:27017/cleancity
+      JWT_SECRET: 23e8c354d65e9019ad244a8ca1f985e1153f7337bd21dad3e271b2645e6b47eb17d8dcfb54ef1756b618efb302a1d985c48f68fe5ca7e44efb82a075a8e98f4b
+      CLOUDINARY_CLOUD_NAME: deqpnbjoj
+      CLOUDINARY_API_KEY: 434686638148559
+      CLOUDINARY_API_SECRET: Xuhl7uiLiTsJtDWlVhcrVqqVHPw
+      ANTHROPIC_API_KEY: vlt_011CZyg8SxCx1ukd4mJAdeKU
+      PORT: 5001
+    depends_on:
+      - mongodb
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: cleancity-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      REACT_APP_API_URL: http://localhost:5001
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+volumes:
+  mongo_data:
